@@ -48,7 +48,7 @@ export default async function main() {
       const response = await new Executor()
         .extension("fs", fsExtension)
         .extension("thinking", thinkingExtension)
-        .execute({
+        .run({
           systemPrompt: getRepoSysPrompt("sample/control-tower"),
           userMessage:
             "Write a read me for this repository. Give me as much detail as you can",

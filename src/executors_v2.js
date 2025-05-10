@@ -15,6 +15,8 @@ export class Executor {
   extensions = {};
   internalState = {};
 
+  constructor() {}
+
   /**
    * Register a Protocol System extension.
    * @param   {Object}           args
@@ -27,94 +29,6 @@ export class Executor {
   }
 
   /**
-   * Performs the actual LLM call to OpenAI.
-   */
-  #execute = async (messages) => {
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
-      messages,
-      store: true,
-      response_format: {
-        type: "json_object",
-      },
-    });
-
-    if (response.choices.length == 0) {
-      return undefined;
-    }
-
-    const message = response.choices[0].message;
-    console.info({ message });
-    return JSON.parse(message.content);
-  };
-
-  /**
-   * This helper prepares the prompt for each LLM API call.
-   * @param   {Object}             args
-   * @param   {string}             args.systemPrompt Original system prompt.
-   * @param   {string}             args.userMessage  An initial user message to kick off orchestration.
-   * @param   {string | undefined} args.formatPrompt Formatting instructions for the final response.
-   */
-  #getConversationHistory = ({ systemPrompt, userMessage, formatPrompt }) => {
-    const protocol = Get_Protocol_System_V2Prompt();
-    const protocolClosingPrompt = Get_Closing_Prompt();
-
-    const starters = [
-      { role: "developer", content: protocol }, // Opening protocol prompt
-      ...Object.values(this.extensions).map((extension) => ({
-        role: "developer",
-        content: extension["prompt"],
-      })), // Add extension instructions to the main prompt
-      { role: "developer", content: systemPrompt }, // System prompt
-      { role: "user", content: userMessage }, // User message
-      { role: "user", content: "<pass />" }, // Kick off conversation
-    ];
-
-    const previousMessages = history.reduce(
-      (prev, { content, executionBuffer }) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: JSON.stringify(content, null, 2),
-        },
-        {
-          role: "user",
-          content: JSON.stringify(executionBuffer, null, 2),
-        },
-      ],
-      []
-    );
-
-    const closingPrompts = readyToGenerate
-      ? [
-          {
-            role: "developer",
-            content: protocolClosingPrompt,
-          },
-          {
-            role: "user",
-            content: "<respond />",
-          },
-        ]
-      : [];
-
-    formatPrompt &&
-      closingPrompts.push({
-        role: "developer",
-        content: formatPrompt,
-      });
-
-    return [...starters, ...previousMessages, ...closingPrompts];
-  };
-
-  /**
-   * Kills the exection cycle.
-   */
-  #toggleReadyToGenerate = () => {
-    readyToGenerate = true;
-  };
-
-  /**
    * Executes a user utterance using the Protocol System V2.
    * @param   {Object}           props
    * @param   {string}           props.systemPrompt Original system prompt.
@@ -122,9 +36,12 @@ export class Executor {
    * @param   {string|undefined} props.formatPrompt Formatting instructions for the final response.
    * @returns {Promise<string>}
    */
-  async execute(props) {
+  async run(props) {
     /**
      * Allows extensions to define internal state in the executor.
+     * The internal state is segmented using ids
+     *
+     * ID could be the extension name
      */
     const state = () => ({
       get: (id) => this.internalState[id],
@@ -132,7 +49,7 @@ export class Executor {
     });
 
     /**
-     * Allows extensions to hook into the buffer that is added into history.
+     * Allows extensions to hook into the execution buffer that is added into history.
      */
     const buffer = () => {
       const executionBuffer = [];
@@ -183,8 +100,8 @@ export class Executor {
           }
         }
       } else {
-        if (this.extensions[target]) {
-          const extension = this.extensions[target];
+        const extension = this.extensions[target];
+        if (extension) {
           extension.handler({
             commands,
             buffer,
@@ -196,6 +113,95 @@ export class Executor {
       history.push({ executionBuffer, content });
     } while (executing);
   }
+
+  /**
+   * Performs the actual LLM call to OpenAI.
+   */
+  #execute = async (messages) => {
+    const response = await client.chat.completions.create({
+      model: "gpt-4o",
+      messages,
+      store: true,
+      response_format: {
+        type: "json_object",
+      },
+    });
+
+    if (response.choices.length == 0) {
+      return undefined;
+    }
+
+    const message = response.choices[0].message;
+    console.info({ message });
+    return JSON.parse(message.content);
+  };
+
+  /**
+   * This helper prepares the prompt for each LLM API call.
+   * @param   {Object}             args
+   * @param   {string}             args.systemPrompt Original system prompt.
+   * @param   {string}             args.userMessage  An initial user message to kick off orchestration.
+   * @param   {string | undefined} args.formatPrompt Formatting instructions for the final response.
+   */
+  #getConversationHistory = ({ systemPrompt, userMessage, formatPrompt }) => {
+    const protocol = Get_Protocol_System_V2Prompt();
+    const protocolClosingPrompt = Get_Closing_Prompt();
+
+    const starters = [
+      { role: "developer", content: protocol }, // Opening protocol prompt
+      ...Object.values(this.extensions).map((extension) => ({
+        role: "developer",
+        content: extension["prompt"],
+      })), // Add extensions' instructions to the main prompt
+      { role: "developer", content: systemPrompt }, // System prompt
+      { role: "user", content: userMessage }, // User message
+      { role: "user", content: "<pass />" }, // Kick off conversation
+    ];
+
+    const previousMessages = history.reduce(
+      (prev, { content, executionBuffer }) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: JSON.stringify(content, null, 2),
+        },
+        {
+          role: "user",
+          content: JSON.stringify(executionBuffer, null, 2),
+        },
+      ],
+      []
+    );
+
+    const closingPrompts = readyToGenerate
+      ? [
+          {
+            role: "developer",
+            content: protocolClosingPrompt,
+          },
+          {
+            role: "user",
+            content: "<respond />",
+          },
+        ]
+      : [];
+
+    if (formatPrompt) {
+      closingPrompts.push({
+        role: "developer",
+        content: formatPrompt,
+      });
+    }
+
+    return [...starters, ...previousMessages, ...closingPrompts];
+  };
+
+  /**
+   * Kills the exection cycle.
+   */
+  #toggleReadyToGenerate = () => {
+    readyToGenerate = true;
+  };
 }
 
 export const fsExtension = {
@@ -203,29 +209,31 @@ export const fsExtension = {
   prompt: Get_Fs_Extension(),
   handler: async ({ commands, buffer }) => {
     const { push } = buffer();
+
     for (const command of commands) {
       switch (command["utility-name"]) {
         case "get_file_structure": {
-          const value = await get_file_structure(command["args"][0]);
+          const [path] = command["args"];
+          const value = await get_file_structure(path);
           push(
             `
-                <reply name="get_file_structure" args="[${
-                  command["args"][0]
-                }]" />
+                <reply name="get_file_structure" args="[${path}]" />
                   ${JSON.stringify(value, null, 2)}
                 </reply />
             `
           );
           break;
         }
+
         case "read_file": {
-          const value = await read_file(command["args"][0]);
+          const [fileName] = command["args"];
+          const value = await read_file(fileName);
           push(
             `
-              <reply name="read_file" args="[${command["args"][0]}]"/>
+              <reply name="read_file" args="[${fileName}]"/>
                 ${JSON.stringify(value, null, 2)}
               </reply />
-          `
+            `
           );
           break;
         }
@@ -244,17 +252,19 @@ export const thinkingExtension = {
     for (const command of commands) {
       switch (command["utility-name"]) {
         case "start_thinking": {
-          get("thinking", (prev) => ({
+          set("thinking", (prev) => ({
             ...prev,
             mode: "thinking",
           }));
           break;
         }
+
         case "send_report": {
           const [report] = command["args"];
           set("thinking", (prev) => ({ ...prev, report }));
           break;
         }
+
         case "push_step": {
           const [step] = command["args"];
           set("thinking", (prev) => ({
@@ -263,6 +273,7 @@ export const thinkingExtension = {
           }));
           break;
         }
+
         case "commit_steps": {
           set("thinking", (prev) => ({
             ...prev,
@@ -270,17 +281,31 @@ export const thinkingExtension = {
           }));
           break;
         }
+
         case "peek_steps": {
           push(
             `
               <reply name="peek_steps" args="[]"/>
-                ${JSON.stringify(state("thinking")["steps"], null, 2)}
+                ${JSON.stringify(get("thinking")["steps"], null, 2)}
               </reply />
-          `
+            `
           );
           break;
         }
+
         case "end_thinking": {
+          const { report, steps } = get("thinking");
+          push(
+            `
+              <message>
+              You have reached the end of the thinking phase. Here is a summary of the task ahead of you.
+              - The task requires you to ${report}
+
+              Here are the steps you've come up with
+              ${steps.map((step) => `- ${step}\n`)}
+              </message/>
+            `
+          );
           set("thinking", (prev) => ({
             ...prev,
             mode: "execution",
