@@ -3,7 +3,9 @@ import {
   Get_Fs_Extension,
   Get_Protocol_System_Prompt as Get_Protocol_System_V2Prompt,
   Get_Thinking_Extension,
-} from "./prompt_v2";
+} from "./prompt_v2.js";
+import { get_file_structure, read_file } from "./tools.js";
+import OpenAI from "openai";
 
 const apiKey = process.env.OPENAI_KEY;
 const client = new OpenAI({ apiKey });
@@ -24,7 +26,7 @@ export class Executor {
    * @param   {Function()}       args.handler  A routine to be handle utility invocations
    */
   extension(name, extension) {
-    extensions[name] = extension;
+    this.extensions[name] = extension;
     return this;
   }
 
@@ -37,28 +39,7 @@ export class Executor {
    * @returns {Promise<string>}
    */
   async run(props) {
-    /**
-     * Allows extensions to define internal state in the executor.
-     * The internal state is segmented using ids
-     *
-     * ID could be the extension name
-     */
-    const state = () => ({
-      get: (id) => this.internalState[id],
-      set: (id, cb) => (this.internalState[id] = cb(this.internalState[id])),
-    });
-
-    /**
-     * Allows extensions to hook into the execution buffer that is added into history.
-     */
-    const buffer = () => {
-      const executionBuffer = [];
-      return { push: (value) => executionBuffer.push(value) };
-    };
-
-    /**
-     * The execution loop allows chain of thought
-     */
+    // The execution loop allows chain of thought
     do {
       const content = await this.#execute(this.#getConversationHistory(props));
 
@@ -81,6 +62,27 @@ export class Executor {
           )}`
         );
       }
+
+      /**
+       * Internal buffer holding execution results.
+       */
+      const executionBuffer = [];
+
+      /**
+       * Allows extensions to define internal state in the executor.
+       * The internal state is segmented using ids
+       *
+       * ID could be the extension name
+       */
+      const state = () => ({
+        get: (id) => this.internalState[id],
+        set: (id, cb) => (this.internalState[id] = cb(this.internalState[id])),
+      });
+
+      /**
+       * Allows extensions to hook into the execution buffer that is added into history.
+       */
+      const buffer = () => ({ push: (value) => executionBuffer.push(value) });
 
       if (target === "main") {
         for (const command of commands) {
@@ -110,8 +112,8 @@ export class Executor {
         }
       }
 
-      history.push({ executionBuffer, content });
-    } while (executing);
+      this.history.push({ executionBuffer, content });
+    } while (this.executing);
   }
 
   /**
@@ -158,7 +160,7 @@ export class Executor {
       { role: "user", content: "<pass />" }, // Kick off conversation
     ];
 
-    const previousMessages = history.reduce(
+    const previousMessages = this.history.reduce(
       (prev, { content, executionBuffer }) => [
         ...prev,
         {
@@ -173,7 +175,7 @@ export class Executor {
       []
     );
 
-    const closingPrompts = readyToGenerate
+    const closingPrompts = this.readyToGenerate
       ? [
           {
             role: "developer",
@@ -200,7 +202,7 @@ export class Executor {
    * Kills the exection cycle.
    */
   #toggleReadyToGenerate = () => {
-    readyToGenerate = true;
+    this.readyToGenerate = true;
   };
 }
 

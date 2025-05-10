@@ -1,4 +1,4 @@
-import { linearLLMExecutor, linearExtendedLLMExecutor } from "./executors.js";
+import { linearLLMExecutor } from "./executors.js";
 import { Executor, fsExtension, thinkingExtension } from "./executors_v2.js";
 
 export const getRepoSysPrompt = (pathToRepo) => `
