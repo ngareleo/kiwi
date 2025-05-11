@@ -26,16 +26,8 @@ export class Executor {
    * @param   {Function()}       args.handler  A routine to be handle utility invocations
    */
   extension(name, extension) {
-    /**
-     * Allows extensions to initialize their own state before execution.
-     */
-    const state = () => ({
-      get: (id) => this.internalState[id],
-      set: (id, cb) => (this.internalState[id] = cb(this.internalState[id])),
-    });
-
     this.extensions[name] = extension;
-    this.extensions[name].init({ state });
+    this.extensions[name].init({ state: this.#accessInnerState });
     return this;
   }
 
@@ -72,26 +64,14 @@ export class Executor {
         );
       }
 
-      /**
-       * Internal buffer holding execution results.
-       */
-      const executionBuffer = [];
-
-      /**
-       * Allows extensions to define internal state in the executor.
-       * The internal state is segmented using ids
-       *
-       * ID could be the extension name
-       */
-      const state = () => ({
-        get: (id) => this.internalState[id],
-        set: (id, cb) => (this.internalState[id] = cb(this.internalState[id])),
-      });
-
-      /**
-       * Allows extensions to hook into the execution buffer that is added into history.
-       */
-      const buffer = () => ({ push: (value) => executionBuffer.push(value) });
+      // Controls buffer that holds invocation results
+      const buffer = () => {
+        const executionBuffer = [];
+        return {
+          push: (value) => executionBuffer.push(value),
+          get: () => executionBuffer,
+        };
+      };
 
       if (target === "main") {
         for (const command of commands) {
@@ -116,12 +96,12 @@ export class Executor {
           extension.handler({
             commands,
             buffer,
-            state,
+            state: this.#accessInnerState,
           });
         }
       }
 
-      this.history.push({ executionBuffer, content });
+      this.history.push({ executionBuffer: buffer().get(), content });
     } while (this.executing);
   }
 
@@ -149,6 +129,7 @@ export class Executor {
 
   /**
    * This helper prepares the prompt for each LLM API call.
+   *
    * @param   {Object}             args
    * @param   {string}             args.systemPrompt Original system prompt.
    * @param   {string}             args.userMessage  An initial user message to kick off orchestration.
@@ -184,18 +165,19 @@ export class Executor {
       []
     );
 
-    const closingPrompts = this.readyToGenerate
-      ? [
-          {
-            role: "developer",
-            content: protocolClosingPrompt,
-          },
-          {
-            role: "user",
-            content: "<respond />",
-          },
-        ]
-      : [];
+    const closingPrompts = [];
+    if (this.readyToGenerate) {
+      closingPrompts.push(
+        {
+          role: "developer",
+          content: protocolClosingPrompt,
+        },
+        {
+          role: "user",
+          content: "<respond />",
+        }
+      );
+    }
 
     if (formatPrompt) {
       closingPrompts.push({
@@ -212,6 +194,17 @@ export class Executor {
    */
   #toggleReadyToGenerate = () => {
     this.readyToGenerate = true;
+  };
+
+  /**
+   * Allows extensions to define internal state in the executor.
+   * The internal state is segmented using IDs
+   */
+  #accessInnerState = () => {
+    return {
+      get: (id) => this.internalState[id],
+      set: (id, cb) => (this.internalState[id] = cb(this.internalState[id])),
+    };
   };
 }
 
