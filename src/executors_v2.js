@@ -26,7 +26,16 @@ export class Executor {
    * @param   {Function()}       args.handler  A routine to be handle utility invocations
    */
   extension(name, extension) {
+    /**
+     * Allows extensions to initialize their own state before execution.
+     */
+    const state = () => ({
+      get: (id) => this.internalState[id],
+      set: (id, cb) => (this.internalState[id] = cb(this.internalState[id])),
+    });
+
     this.extensions[name] = extension;
+    this.extensions[name].init({ state });
     return this;
   }
 
@@ -209,6 +218,7 @@ export class Executor {
 export const fsExtension = {
   name: "fs",
   prompt: Get_Fs_Extension(),
+  init: () => {},
   handler: async ({ commands, buffer }) => {
     const { push } = buffer();
 
@@ -244,9 +254,14 @@ export const fsExtension = {
   },
 };
 
+export const THINKING_EXT_NAME = "thinking";
 export const thinkingExtension = {
-  name: "thinking",
+  name: THINKING_EXT_NAME,
   prompt: Get_Thinking_Extension(),
+  init: ({ state }) => {
+    const { set } = state();
+    set(THINKING_EXT_NAME, () => ({}));
+  },
   handler: async ({ commands, buffer, state }) => {
     const { push } = buffer();
     const { set, get } = state();
@@ -254,20 +269,60 @@ export const thinkingExtension = {
     for (const command of commands) {
       switch (command["utility-name"]) {
         case "start_thinking": {
+          const { active } = get(THINKING_EXT_NAME);
+          if (active) {
+            push(`
+              <message type="error">
+              Thinking already in progress.
+              </message/>
+            `);
+            break;
+          }
+
           set("thinking", (prev) => ({
             ...prev,
-            mode: "thinking",
+            active: true,
           }));
           break;
         }
 
         case "send_report": {
+          const { active } = get(THINKING_EXT_NAME);
+          if (!active) {
+            push(`
+              <message type="error">
+              - You cannot send a report without activating thinking mode. 
+              - You need to invoke the "start_thinking" utility first to do so.
+              </message/>
+            `);
+            break;
+          }
+
           const [report] = command["args"];
           set("thinking", (prev) => ({ ...prev, report }));
           break;
         }
 
         case "push_step": {
+          const { active, status } = get(THINKING_EXT_NAME);
+          if (!active) {
+            push(`
+              <message type="error">
+              - You cannot send a report without activating thinking mode. 
+              - You need to invoke the "start_thinking" utility first to do so.
+              </message/>
+            `);
+            break;
+          } else if (status === "sealed") {
+            push(`
+              <message type="error">
+              - You cannot add a step once you comitted the steps
+              - You need to invoke the "start_thinking" utility again to do so.
+              </message/>
+            `);
+            break;
+          }
+
           const [step] = command["args"];
           set("thinking", (prev) => ({
             ...prev,
@@ -277,6 +332,17 @@ export const thinkingExtension = {
         }
 
         case "commit_steps": {
+          const { active } = get(THINKING_EXT_NAME);
+          if (!active) {
+            push(`
+              <message type="error">
+              - You cannot send a report without activating thinking mode. 
+              - You need to invoke the "start_thinking" utility first to do so.
+              </message/>
+            `);
+            break;
+          }
+
           set("thinking", (prev) => ({
             ...prev,
             status: "sealed",
@@ -285,10 +351,12 @@ export const thinkingExtension = {
         }
 
         case "peek_steps": {
+          // can be invoked outside the thinking mode.
+          const { steps } = get(THINKING_EXT_NAME);
           push(
             `
               <reply name="peek_steps" args="[]"/>
-                ${JSON.stringify(get("thinking")["steps"], null, 2)}
+                ${JSON.stringify(steps, null, 2)}
               </reply />
             `
           );
@@ -296,7 +364,18 @@ export const thinkingExtension = {
         }
 
         case "end_thinking": {
-          const { report, steps } = get("thinking");
+          const { active } = get(THINKING_EXT_NAME);
+          if (!active) {
+            push(`
+              <message type="error">
+              - You cannot send a report without activating thinking mode. 
+              - You need to invoke the "start_thinking" utility first to do so.
+              </message/>
+            `);
+            break;
+          }
+
+          const { report, steps } = get(THINKING_EXT_NAME);
           push(
             `
               <message>
@@ -310,7 +389,7 @@ export const thinkingExtension = {
           );
           set("thinking", (prev) => ({
             ...prev,
-            mode: "execution",
+            active: false,
           }));
           break;
         }
