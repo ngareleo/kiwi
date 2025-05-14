@@ -58,7 +58,7 @@ export async function repoUnderstanding() {
         .extension('fs', fsExtension)
         .extension('thinking', thinkingExtension)
         .run({
-          systemPrompt: getRepoSysPrompt('sample/control-tower'),
+          systemPrompt: getRepoSysPrompt(sysPath),
           userMessage:
             'Write a read me for this repository. Give me as much detail as you can',
         });
@@ -182,7 +182,7 @@ const createLogger = (options) => {
  * I'll start another side project using assistant api
  */
 export async function asyncExecution() {
-  const systemPrompt = getRepoSysPrompt('sample/control-tower');
+  const systemPrompt = getRepoSysPrompt(getRootpath('__samples__/remind'));
   const userMessage = process.argv[3] || 'What is the point of this repo?';
   const stream = await llmStream({ systemPrompt, userMessage });
   pipeline(
