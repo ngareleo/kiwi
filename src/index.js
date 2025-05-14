@@ -1,8 +1,4 @@
-import assistant from "./assistant_api.js";
-import asyncExecution from "./async_execution.js";
-import repoUnderstanding from "./repo_understanding.js";
-import runningMemory from "./running_memory.js";
-import thinkPlanExecuteExecution from "./think_plan_execute.js";
+import { repoUnderstanding, asyncExecution, runningMemory, thinkPlanExecute } from "./projects"
 
 async function main() {
   const project = process.argv[2];
@@ -36,7 +32,7 @@ async function main() {
     }
 
     case "think": {
-      await thinkPlanExecuteExecution();
+      await thinkPlanExecute();
       break;
     }
 
