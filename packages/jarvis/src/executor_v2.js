@@ -17,7 +17,7 @@ export class Executor {
   extensions = {};
   internalState = {};
 
-  constructor() {}
+  constructor() { }
 
   /**
    * Register a Protocol System extension.
@@ -211,7 +211,7 @@ export class Executor {
 export const fsExtension = {
   name: "fs",
   prompt: Get_Fs_Extension(),
-  init: () => {},
+  init: () => { },
   handler: async ({ commands, buffer }) => {
     const { push } = buffer();
 

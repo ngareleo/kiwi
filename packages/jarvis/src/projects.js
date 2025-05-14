@@ -4,7 +4,6 @@ import OpenAI from "openai";
 import { linearLLMExecutor } from "./executors.js";
 import { Executor, fsExtension, thinkingExtension } from "./executors_v2.js";
 import { Get_AsyncProtocol_System_Prompt } from "./prompt_async.js";
-import { getRepoSysPrompt } from "./repo_understanding.js";
 
 const apiKey = process.env.OPENAI_KEY;
 const client = new OpenAI({ apiKey });
