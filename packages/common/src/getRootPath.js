@@ -1,8 +1,5 @@
-import { fileURLToPath } from 'url';
-import path, { resolve } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { resolve } from 'path';
+import __dirname from './__dirname.js';
 
 /**
  *
