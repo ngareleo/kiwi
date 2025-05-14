@@ -11,8 +11,8 @@
  * ---------------------------------------------------------
  *
  */
-import { cwd } from 'process';
+import getRootPath from '@kiwi/common/src/getRootPath.js';
 
 (async () => {
-  console.log(cwd());
+  console.log(getRootPath());
 })();

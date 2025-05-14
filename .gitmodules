@@ -1,6 +1,9 @@
-[submodule "__samples__/control-tower"]
-	path = __samples__/control-tower
-	url = https://github.com/ngareleo/control-tower.git
-[submodule "__samples__/scrapy"]
-	path = __samples__/scrapy
-	url = https://github.com/scrapy/scrapy.git
+[submodule "__samples__/maze-runner"]
+	path = __samples__/maze-runner
+	url = https://github.com/ngareleo/maze-runner.git
+[submodule "__samples__/listening-monster"]
+	path = __samples__/listening-monster
+	url = https://github.com/ngareleo/listening-monster.git
+[submodule "__samples__/remind"]
+	path = __samples__/remind
+	url = https://github.com/ngareleo/remindeer-frontend.git

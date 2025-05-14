@@ -1,6 +1,7 @@
 import { Transform, PassThrough, pipeline } from 'stream';
 import 'dotenv/config';
 import OpenAI from 'openai';
+import getRootpath from '@kiwi/common/src/getRootpath.js';
 import { linearLLMExecutor } from './executor_v1.js';
 import { Executor, fsExtension, thinkingExtension } from './executor_v2.js';
 import { Get_AsyncProtocol_System_Prompt } from './prompt_async.js';
@@ -41,10 +42,11 @@ export const closingPrompt = `
 `;
 
 export async function repoUnderstanding() {
+  const sysPath = getRootpath('__sample__/remind');
   return {
     v1: async () => {
       const response = await linearLLMExecutor({
-        systemPrompt: getRepoSysPrompt('sample/control-tower'),
+        systemPrompt: getRepoSysPrompt(),
         userMessage:
           'Write a read me for this repository. Give me as much detail as you can',
       });

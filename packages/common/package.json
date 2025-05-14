@@ -1,0 +1,7 @@
+{
+  "name": "@kiwi/common",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Common utilities",
+  "main": "src/index.js"
+}
