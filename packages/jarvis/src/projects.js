@@ -1,13 +1,12 @@
-import { Transform, PassThrough, pipeline } from "stream";
-import "dotenv/config";
-import OpenAI from "openai";
-import { linearLLMExecutor } from "./executors.js";
-import { Executor, fsExtension, thinkingExtension } from "./executors_v2.js";
-import { Get_AsyncProtocol_System_Prompt } from "./prompt_async.js";
+import { Transform, PassThrough, pipeline } from 'stream';
+import 'dotenv/config';
+import OpenAI from 'openai';
+import { linearLLMExecutor } from './executor_v1.js';
+import { Executor, fsExtension, thinkingExtension } from './executor_v2.js';
+import { Get_AsyncProtocol_System_Prompt } from './prompt_async.js';
 
 const apiKey = process.env.OPENAI_KEY;
 const client = new OpenAI({ apiKey });
-
 
 export const getRepoSysPrompt = (pathToRepo) => `
 # Your Objective
@@ -42,31 +41,30 @@ export const closingPrompt = `
 `;
 
 export async function repoUnderstanding() {
-    return {
-        v1: async () => {
-            const response = await linearLLMExecutor({
-                systemPrompt: getRepoSysPrompt("sample/control-tower"),
-                userMessage:
-                    "Write a read me for this repository. Give me as much detail as you can",
-            });
+  return {
+    v1: async () => {
+      const response = await linearLLMExecutor({
+        systemPrompt: getRepoSysPrompt('sample/control-tower'),
+        userMessage:
+          'Write a read me for this repository. Give me as much detail as you can',
+      });
 
-            console.log({ response });
-        },
-        v2: async () => {
-            const response = await new Executor()
-                .extension("fs", fsExtension)
-                .extension("thinking", thinkingExtension)
-                .run({
-                    systemPrompt: getRepoSysPrompt("sample/control-tower"),
-                    userMessage:
-                        "Write a read me for this repository. Give me as much detail as you can",
-                });
+      console.log({ response });
+    },
+    v2: async () => {
+      const response = await new Executor()
+        .extension('fs', fsExtension)
+        .extension('thinking', thinkingExtension)
+        .run({
+          systemPrompt: getRepoSysPrompt('sample/control-tower'),
+          userMessage:
+            'Write a read me for this repository. Give me as much detail as you can',
+        });
 
-            console.log({ response });
-        },
-    };
+      console.log({ response });
+    },
+  };
 }
-
 
 /**
  * RUNNING MEMORY
@@ -85,8 +83,7 @@ export async function repoUnderstanding() {
  * 1. Prepare this scenario (Produce files and a mock project with personel, based on real timestamps, with a high level theme) (I need an intern)
  * 2. Build a proper retrieval system that is driven by the assistant.
  */
-export async function runningMemory() { }
-
+export async function runningMemory() {}
 
 /**
  * The protocol in its vanilla form invokes chain of thought to some level of success. A good thing is that its really reusable and scalable
@@ -101,8 +98,7 @@ export async function runningMemory() { }
  * 5. To replan means to identify what change we need to make to the current plan based on a logical reason.
  * 6. Eventually we will reach task completion.
  */
-export async function thinkPlanExecute() { }
-
+export async function thinkPlanExecute() {}
 
 /**
  * @param {object} props
@@ -111,24 +107,24 @@ export async function thinkPlanExecute() { }
  * @returns                           A readable stream of an llm's response.
  */
 const llmStream = async ({ systemPrompt, userMessage }) => {
-    const protocolPrompt = Get_AsyncProtocol_System_Prompt();
+  const protocolPrompt = Get_AsyncProtocol_System_Prompt();
 
-    const response = await client.responses.create({
-        model: "gpt-4o",
-        input: [
-            { role: "developer", content: protocolPrompt },
-            { role: "developer", content: systemPrompt },
-            { role: "user", content: userMessage },
-            { role: "user", content: "<pass />" },
-        ],
-        store: true,
-        stream: true,
-        text: {
-            format: { type: "json_object" },
-        },
-    });
+  const response = await client.responses.create({
+    model: 'gpt-4o',
+    input: [
+      { role: 'developer', content: protocolPrompt },
+      { role: 'developer', content: systemPrompt },
+      { role: 'user', content: userMessage },
+      { role: 'user', content: '<pass />' },
+    ],
+    store: true,
+    stream: true,
+    text: {
+      format: { type: 'json_object' },
+    },
+  });
 
-    return response.toReadableStream();
+  return response.toReadableStream();
 };
 
 /**
@@ -138,17 +134,17 @@ const llmStream = async ({ systemPrompt, userMessage }) => {
  * @returns {Transform}
  */
 const createReplyChunker = (options) => {
-    return new Transform({
-        ...options,
-        objectMode: true,
-        transform(chunk, _, cb) {
-            const json = JSON.parse(new Buffer.from(chunk).toString());
-            if (json["type"] === "response.output_text.done") {
-                this.push(json["text"]);
-            }
-            cb();
-        },
-    });
+  return new Transform({
+    ...options,
+    objectMode: true,
+    transform(chunk, _, cb) {
+      const json = JSON.parse(new Buffer.from(chunk).toString());
+      if (json['type'] === 'response.output_text.done') {
+        this.push(json['text']);
+      }
+      cb();
+    },
+  });
 };
 
 /**
@@ -158,12 +154,12 @@ const createReplyChunker = (options) => {
  * @returns {Transform}
  */
 const createLogger = (options) => {
-    return new PassThrough({ objectMode: true, ...options }).on(
-        "data",
-        (chunk) => {
-            console.log(JSON.stringify(JSON.parse(chunk), null, 2));
-        }
-    );
+  return new PassThrough({ objectMode: true, ...options }).on(
+    'data',
+    (chunk) => {
+      console.log(JSON.stringify(JSON.parse(chunk), null, 2));
+    }
+  );
 };
 
 /**
@@ -184,13 +180,13 @@ const createLogger = (options) => {
  * I'll start another side project using assistant api
  */
 export async function asyncExecution() {
-    const systemPrompt = getRepoSysPrompt("sample/control-tower");
-    const userMessage = process.argv[3] || "What is the point of this repo?";
-    const stream = await llmStream({ systemPrompt, userMessage });
-    pipeline(
-        stream,
-        createReplyChunker({ objectMode: true }),
-        createLogger({ objectMode: true }),
-        (err) => err && console.error({ err })
-    );
+  const systemPrompt = getRepoSysPrompt('sample/control-tower');
+  const userMessage = process.argv[3] || 'What is the point of this repo?';
+  const stream = await llmStream({ systemPrompt, userMessage });
+  pipeline(
+    stream,
+    createReplyChunker({ objectMode: true }),
+    createLogger({ objectMode: true }),
+    (err) => err && console.error({ err })
+  );
 }

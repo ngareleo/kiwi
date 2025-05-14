@@ -1,6 +1,6 @@
-[submodule "sample/control-tower"]
-	path = sample/control-tower
+[submodule "__samples__/control-tower"]
+	path = __samples__/control-tower
 	url = https://github.com/ngareleo/control-tower.git
-[submodule "sample/scrapy"]
-	path = sample/scrapy
+[submodule "__samples__/scrapy"]
+	path = __samples__/scrapy
 	url = https://github.com/scrapy/scrapy.git

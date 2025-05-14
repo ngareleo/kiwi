@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "yarn workspace @kiwi/ui build",
+    "lab": "yarn workspace @kiwi/jarvis lab",
     "start:jarvis": "yarn workspace @kiwi/jarvis start",
     "start:ui": "yarn workspace @kiwi/ui start"
   },
