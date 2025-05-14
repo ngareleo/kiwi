@@ -42,11 +42,11 @@ export const closingPrompt = `
 `;
 
 export async function repoUnderstanding() {
-  const sysPath = getRootpath('__sample__/remind');
+  const sysPath = getRootpath('__samples__/remind');
   return {
     v1: async () => {
       const response = await linearLLMExecutor({
-        systemPrompt: getRepoSysPrompt(),
+        systemPrompt: getRepoSysPrompt(sysPath),
         userMessage:
           'Write a read me for this repository. Give me as much detail as you can',
       });
