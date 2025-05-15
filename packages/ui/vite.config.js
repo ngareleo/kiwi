@@ -6,7 +6,8 @@ const buildOutputPath = getRootPath('dist');
 
 export default defineConfig({
   build: {
-    outDir: buildOutputPath
+    outDir: buildOutputPath,
+    manifest: true
   },
   plugins: [react()],
 });

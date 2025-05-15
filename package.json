@@ -11,12 +11,12 @@
   ],
   "scripts": {
     "build": "yarn workspace @kiwi/ui build",
+    "dev:server": "yarn workspace @kiwi/jarvis dev",
     "lab": "yarn workspace @kiwi/jarvis lab",
     "start:jarvis": "yarn workspace @kiwi/jarvis start",
     "start:ui": "yarn workspace @kiwi/ui start"
   },
   "prettier": {
-    "printWidth": 80,
     "semi": true,
     "singleQuote": true,
     "tabWidth": 2,
