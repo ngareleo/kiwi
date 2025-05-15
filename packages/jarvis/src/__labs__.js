@@ -11,5 +11,8 @@
  * ---------------------------------------------------------
  *
  */
+import getRootPath from '@kiwi/common/src/getRootPath.js';
 
-(async () => {})();
+(async () => {
+  console.log(getRootPath());
+})();

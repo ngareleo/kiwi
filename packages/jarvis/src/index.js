@@ -1,4 +1,4 @@
-import { repoUnderstanding, asyncExecution, runningMemory, thinkPlanExecute } from "./projects"
+import { repoUnderstanding, asyncExecution, runningMemory, thinkPlanExecute } from "./projects.js"
 
 async function main() {
   const project = process.argv[2];

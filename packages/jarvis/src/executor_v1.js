@@ -2,7 +2,7 @@ import "dotenv/config";
 import {
   Get_ClosingPrompt,
   Get_Protocol_System_Prompt,
-} from "./prompt_vbase.js";
+} from "./prompt_v1.js";
 import { get_file_structure, read_file } from "./tools.js";
 import OpenAI from "openai";
 
@@ -74,23 +74,23 @@ export async function linearLLMExecutor({
       ...previousMessages,
       ...(readyToGenerate
         ? [
-            {
-              role: "user",
-              content: "<respond />",
-            },
-            {
-              role: "developer",
-              content: closingPrompt,
-            },
-            ...(formatPrompt
-              ? [
-                  {
-                    role: "developer",
-                    content: formatPrompt,
-                  },
-                ]
-              : []),
-          ]
+          {
+            role: "user",
+            content: "<respond />",
+          },
+          {
+            role: "developer",
+            content: closingPrompt,
+          },
+          ...(formatPrompt
+            ? [
+              {
+                role: "developer",
+                content: formatPrompt,
+              },
+            ]
+            : []),
+        ]
         : []),
     ];
   };

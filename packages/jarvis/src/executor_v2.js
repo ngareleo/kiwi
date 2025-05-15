@@ -3,9 +3,9 @@ import {
   Get_Fs_Extension,
   Get_Protocol_System_Prompt as Get_Protocol_System_V2Prompt,
   Get_Thinking_Extension,
-} from "./prompt_v2.js";
-import { get_file_structure, read_file } from "./tools.js";
-import OpenAI from "openai";
+} from './prompt_v2.js';
+import { get_file_structure, read_file } from './tools.js';
+import OpenAI from 'openai';
 
 const apiKey = process.env.OPENAI_KEY;
 const client = new OpenAI({ apiKey });
@@ -45,11 +45,11 @@ export class Executor {
       const content = await this.#execute(this.#getConversationHistory(props));
 
       if (!content) {
-        throw Error("Internal problem. Missing response from LLM Service");
+        throw Error('Internal problem. Missing response from LLM Service');
       }
 
-      if (content["final-response"]) {
-        return content["final-response"];
+      if (content['final-response']) {
+        return content['final-response'];
       }
 
       const { target, commands } = content;
@@ -73,20 +73,20 @@ export class Executor {
         };
       };
 
-      if (target === "main") {
+      if (target === 'main') {
         for (const command of commands) {
-          switch (command["utility-name"]) {
-            case "pass_token": {
+          switch (command['utility-name']) {
+            case 'pass_token': {
               break;
             }
 
-            case "ready": {
+            case 'ready': {
               this.#toggleReadyToGenerate();
               break;
             }
 
             default: {
-              console.error("Invalid utility from LLM ", command);
+              console.error('Invalid utility from LLM ', command);
             }
           }
         }
@@ -110,11 +110,11 @@ export class Executor {
    */
   #execute = async (messages) => {
     const response = await client.chat.completions.create({
-      model: "gpt-4o",
+      model: 'gpt-4o',
       messages,
       store: true,
       response_format: {
-        type: "json_object",
+        type: 'json_object',
       },
     });
 
@@ -140,25 +140,25 @@ export class Executor {
     const protocolClosingPrompt = Get_Closing_Prompt();
 
     const starters = [
-      { role: "developer", content: protocol }, // Opening protocol prompt
+      { role: 'developer', content: protocol }, // Opening protocol prompt
       ...Object.values(this.extensions).map((extension) => ({
-        role: "developer",
-        content: extension["prompt"],
+        role: 'developer',
+        content: extension['prompt'],
       })), // Add extensions' instructions to the main prompt
-      { role: "developer", content: systemPrompt }, // System prompt
-      { role: "user", content: userMessage }, // User message
-      { role: "user", content: "<pass />" }, // Kick off conversation
+      { role: 'developer', content: systemPrompt }, // System prompt
+      { role: 'user', content: userMessage }, // User message
+      { role: 'user', content: '<pass />' }, // Kick off conversation
     ];
 
     const previousMessages = this.history.reduce(
       (prev, { content, executionBuffer }) => [
         ...prev,
         {
-          role: "assistant",
+          role: 'assistant',
           content: JSON.stringify(content, null, 2),
         },
         {
-          role: "user",
+          role: 'user',
           content: JSON.stringify(executionBuffer, null, 2),
         },
       ],
@@ -169,19 +169,19 @@ export class Executor {
     if (this.readyToGenerate) {
       closingPrompts.push(
         {
-          role: "developer",
+          role: 'developer',
           content: protocolClosingPrompt,
         },
         {
-          role: "user",
-          content: "<respond />",
+          role: 'user',
+          content: '<respond />',
         }
       );
     }
 
     if (formatPrompt) {
       closingPrompts.push({
-        role: "developer",
+        role: 'developer',
         content: formatPrompt,
       });
     }
@@ -209,16 +209,16 @@ export class Executor {
 }
 
 export const fsExtension = {
-  name: "fs",
+  name: 'fs',
   prompt: Get_Fs_Extension(),
   init: () => {},
   handler: async ({ commands, buffer }) => {
     const { push } = buffer();
 
     for (const command of commands) {
-      switch (command["utility-name"]) {
-        case "get_file_structure": {
-          const [path] = command["args"];
+      switch (command['utility-name']) {
+        case 'get_file_structure': {
+          const [path] = command['args'];
           const value = await get_file_structure(path);
           push(
             `
@@ -230,8 +230,8 @@ export const fsExtension = {
           break;
         }
 
-        case "read_file": {
-          const [fileName] = command["args"];
+        case 'read_file': {
+          const [fileName] = command['args'];
           const value = await read_file(fileName);
           push(
             `
@@ -247,7 +247,7 @@ export const fsExtension = {
   },
 };
 
-export const THINKING_EXT_NAME = "thinking";
+export const THINKING_EXT_NAME = 'thinking';
 export const thinkingExtension = {
   name: THINKING_EXT_NAME,
   prompt: Get_Thinking_Extension(),
@@ -260,8 +260,8 @@ export const thinkingExtension = {
     const { set, get } = state();
 
     for (const command of commands) {
-      switch (command["utility-name"]) {
-        case "start_thinking": {
+      switch (command['utility-name']) {
+        case 'start_thinking': {
           const { active } = get(THINKING_EXT_NAME);
           if (active) {
             push(`
@@ -272,14 +272,14 @@ export const thinkingExtension = {
             break;
           }
 
-          set("thinking", (prev) => ({
+          set('thinking', (prev) => ({
             ...prev,
             active: true,
           }));
           break;
         }
 
-        case "send_report": {
+        case 'send_report': {
           const { active } = get(THINKING_EXT_NAME);
           if (!active) {
             push(`
@@ -291,12 +291,12 @@ export const thinkingExtension = {
             break;
           }
 
-          const [report] = command["args"];
-          set("thinking", (prev) => ({ ...prev, report }));
+          const [report] = command['args'];
+          set('thinking', (prev) => ({ ...prev, report }));
           break;
         }
 
-        case "push_step": {
+        case 'push_step': {
           const { active, status } = get(THINKING_EXT_NAME);
           if (!active) {
             push(`
@@ -306,7 +306,7 @@ export const thinkingExtension = {
               </message/>
             `);
             break;
-          } else if (status === "sealed") {
+          } else if (status === 'sealed') {
             push(`
               <message type="error">
               - You cannot add a step once you comitted the steps
@@ -316,15 +316,15 @@ export const thinkingExtension = {
             break;
           }
 
-          const [step] = command["args"];
-          set("thinking", (prev) => ({
+          const [step] = command['args'];
+          set('thinking', (prev) => ({
             ...prev,
             steps: [...(prev.steps || []), step],
           }));
           break;
         }
 
-        case "commit_steps": {
+        case 'commit_steps': {
           const { active } = get(THINKING_EXT_NAME);
           if (!active) {
             push(`
@@ -336,14 +336,14 @@ export const thinkingExtension = {
             break;
           }
 
-          set("thinking", (prev) => ({
+          set('thinking', (prev) => ({
             ...prev,
-            status: "sealed",
+            status: 'sealed',
           }));
           break;
         }
 
-        case "peek_steps": {
+        case 'peek_steps': {
           // can be invoked outside the thinking mode.
           const { steps } = get(THINKING_EXT_NAME);
           push(
@@ -356,7 +356,7 @@ export const thinkingExtension = {
           break;
         }
 
-        case "end_thinking": {
+        case 'end_thinking': {
           const { active } = get(THINKING_EXT_NAME);
           if (!active) {
             push(`
@@ -380,7 +380,7 @@ export const thinkingExtension = {
               </message/>
             `
           );
-          set("thinking", (prev) => ({
+          set('thinking', (prev) => ({
             ...prev,
             active: false,
           }));

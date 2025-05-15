@@ -1,19 +1,37 @@
 {
-    "name": "repo-understanding",
-    "version": "1.0.0",
-    "description": "An agent that helps onboard you to a new repository",
-    "type": "module",
-    "main": "index.js",
-    "scripts": {
-        "lab": "node src/__labs__.js",
-        "start": "node src/index.js",
-        "test": "jest"
-    },
-    "repository": "https://github.com/ngareleo/repo-understanding.git",
-    "author": "ngarimwenda@gmail.com <ngarimwenda@gmail.com>",
-    "license": "MIT",
-    "dependencies": {
-        "dotenv": "^16.4.7",
-        "openai": "^4.91.0"
-    }
+  "name": "kiwi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A curation of LLM orchestrators.",
+  "repository": "https://github.com/ngareleo/kiwi.git",
+  "license": "MIT",
+  "author": "ngarimwenda@gmail.com <ngarimwenda@gmail.com>",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn workspace @kiwi/ui build",
+    "dev:server": "yarn workspace @kiwi/jarvis dev",
+    "lab": "yarn workspace @kiwi/jarvis lab",
+    "start:jarvis": "yarn workspace @kiwi/jarvis start",
+    "start:ui": "yarn workspace @kiwi/ui start"
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "overrides": [
+      {
+        "files": "*.json",
+        "options": {
+          "parser": "json-stringify"
+        }
+      }
+    ]
+  },
+  "devDependencies": {
+    "prettier": "^2.8.0",
+    "prettier-plugin-packagejson": "^2.4.0"
+  }
 }
