@@ -1,18 +1,1 @@
-{
-  "index.html": {
-    "file": "assets/index-9_sxcfan.js",
-    "name": "index",
-    "src": "index.html",
-    "isEntry": true,
-    "css": [
-      "assets/index-D8b4DHJx.css"
-    ],
-    "assets": [
-      "assets/react-CHdo91hT.svg"
-    ]
-  },
-  "src/assets/react.svg": {
-    "file": "assets/react-CHdo91hT.svg",
-    "src": "src/assets/react.svg"
-  }
-}
+{}
