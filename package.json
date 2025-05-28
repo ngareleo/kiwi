@@ -11,16 +11,30 @@
   ],
   "scripts": {
     "build": "yarn workspace @kiwi/ui build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "dev:server": "yarn workspace @kiwi/jarvis dev",
     "lab": "yarn workspace @kiwi/jarvis lab",
     "start:jarvis": "yarn workspace @kiwi/jarvis start",
-    "start:ui": "yarn workspace @kiwi/ui start"
+    "start:ui": "yarn workspace @kiwi/ui start",
+        "type-check": "tsc --noEmit",
+    "prepare": "husky install",
+    "precommit": "lint-staged"
   },
   "prettier": {
-    "semi": true,
-    "singleQuote": true,
-    "tabWidth": 2,
+     "semi": true,
     "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 80,
+    "tabWidth": 2,
+    "useTabs": false,
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "endOfLine": "auto",
+    "jsxSingleQuote": false,
+    "quoteProps": "as-needed",
+    "bracketSameLine": false,
     "overrides": [
       {
         "files": "*.json",
@@ -36,7 +50,81 @@
     "rollup": "^4.35.0"
   },
   "devDependencies": {
+     "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+     "@types/node": "^22.5.5",
+         "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+     "husky": "^8.0.0",
+         "eslint": "^8.56.0",
+         "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "lint-staged": "^15.0.0",
+        "typescript": "^5.5.3",
     "prettier": "^2.8.0",
     "prettier-plugin-packagejson": "^2.4.0"
-  }
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "browser": true,
+      "es2020": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended"
+    ],
+    "ignorePatterns": [
+      "dist",
+      ".eslintrc.json"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint",
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": "error"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "type-enum": [
+        2,
+        "always",
+        [
+          "feat",
+          "fix",
+          "docs",
+          "style",
+          "refactor",
+          "perf",
+          "test",
+          "chore",
+          "revert",
+          "ci",
+          "build"
+        ]
+      ]
+    }
+  },
+  "packageManager": "yarn@4.9.1+sha512.f95ce356460e05be48d66401c1ae64ef84d163dd689964962c6888a9810865e39097a5e9de748876c2e0bf89b232d583c33982773e9903ae7a76257270986538"
 }
