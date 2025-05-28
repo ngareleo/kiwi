@@ -1,0 +1,15 @@
+{
+  "root": [
+    "./src/App.tsx",
+    "./src/Root.tsx",
+    "./src/main.tsx",
+    "./src/vite-env.d.ts",
+    "./src/components/Header.tsx",
+    "./src/components/Layout.tsx",
+    "./src/components/LeftPane.tsx",
+    "./src/components/MainPane.tsx",
+    "./src/components/RightPane.tsx",
+    "./src/components/index.ts"
+  ],
+  "version": "5.8.3"
+}
