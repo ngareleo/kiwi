@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "yarn workspace @kiwi/ui build",
+    "clean": "rm -rf node_modules .yarn yarn.lock && yarn cache clean",
     "dev:server": "yarn workspace @kiwi/jarvis dev",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "lab": "yarn workspace @kiwi/jarvis lab",
@@ -72,11 +73,6 @@
         }
       }
     ]
-  },
-  "dependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^19.0.0 || ^18.0.0",
-    "rollup": "^4.35.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
