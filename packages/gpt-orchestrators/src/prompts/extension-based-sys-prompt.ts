@@ -1,18 +1,15 @@
-const protocol = "'Protocol'";
-const token = "'Protocol Messaging Token'";
-const message = "'Protocol JSON Message'";
-const directive = "'Protocol Directive'";
-const directives = "'Protocol Directives'";
-const extension = "'Protocol Extension'";
-const extensions = "'Protocol Extensions'";
-const system = "'Protocol System'";
-const pass = '<pass />';
-const stepPlan = "'Step Plan'";
-const taskAnalysisReport = "'Task Analysis Report'";
-const thinkingExtension = "'thinking extension'";
-const thinkingPhase = "'thinking phase'";
-const respondingPhase = "'responding phase'";
-const finalResponse = "'final-response'";
+import {
+  directive,
+  directives,
+  extension,
+  extensions,
+  finalResponse,
+  message,
+  pass,
+  protocol,
+  system,
+  token,
+} from '../constants';
 
 /**
  * The prompt familiarizes the LLM with the 'Protocol' which is the foundation of the messaging system between us and the llm
@@ -52,8 +49,8 @@ export const Get_Protocol_System_Prompt = () => `
     target: "main",
     message: "Ready to generate output",
     commands: [
-        { "utility-name": "ready", args: ["pathToFile"] },
-        { "utility-name": "pass_token", args: [] },
+        { "utility": "ready", args: ["pathToFile"] },
+        { "utility": "pass_token", args: [] },
     ]
 }
 \`\`\`
@@ -87,7 +84,7 @@ export const Get_Protocol_System_Prompt = () => `
     // A list of utilities you chose to invoke.
     // The order of utility invocation matters. 
     // An entry in the list must follow the following schema:
-    //   <utility-name>The utility you want to invoke.</utility-name>
+    //   <utility>The utility you want to invoke.</utility>
     //   <args>A list of argument values to pass to the utility. _The list is order sensitive_</args>
     \`,
     "final-response": \`
@@ -113,18 +110,4 @@ export const Get_Protocol_System_Prompt = () => `
 - <respond />  - The Protocol has allowed you to pass the ${finalResponse}.
 - <message />  - The Protocol sends you messages. Incase a utility returns an error, the message is sent using this directive. <message>{message contents}</message>. 
 - <reply />    - The Protocol sends a reply to a utility invocation. <reply name="{name of the utility}" args="{Arguments you passed}">{utility results}</reply>. 
-`;
-
-export const Get_Fs_Extension = () => `
-# Protocol File Extension
-- The ${protocol} has enabled the file system extension. This extension allows you to interact with a virtual file system on the ${system}.
-- The name of this extension is "fs".
-
-# Extension Instructions
-- You can read a file from the file system by invoking the "get_file(pathToFile)" where pathToFile is a path to a file.
-- You can read the file structure by invoking the "get_file_structure(pathToProject, depth=infinity)" where is the base path to start the tree from and the depth is the number of nested directories to return.
-
-# Additional Utilities
-- get_file_structure(pathToProject) - Should give you a string representation of the project at \`pathToProject\`.
-- read_file(pathToFile)             - Should give you the contents of a file at 'pathToFile'. If the file doesn't exist the ${protocol} will send error details through the  <message/> directive.
 `;

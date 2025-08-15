@@ -1,4 +1,9 @@
-import { repoUnderstanding, asyncExecution, runningMemory, thinkPlanExecute } from "./projects.js"
+import {
+  repoUnderstanding,
+  asyncExecution,
+  runningMemory,
+  thinkPlanExecute,
+} from './projects.js';
 
 async function main() {
   const project = process.argv[2];
@@ -6,32 +11,32 @@ async function main() {
     await repoUnderstanding();
 
   switch (project) {
-    case "repo": {
+    case 'repo': {
       await repoUnderstandingV1();
       break;
     }
 
-    case "repoV2": {
+    case 'repoV2': {
       await repoUnderstandingV2();
       break;
     }
 
-    case "async": {
+    case 'async': {
       await asyncExecution();
       break;
     }
 
-    case "assistant": {
+    case 'assistant': {
       await assistant();
       break;
     }
 
-    case "running": {
+    case 'running': {
       await runningMemory();
       break;
     }
 
-    case "think": {
+    case 'think': {
       await thinkPlanExecute();
       break;
     }
