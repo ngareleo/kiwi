@@ -85,34 +85,18 @@ export class Executor {
       ) => {
         const { push } = buffer();
         push(
-          `
-          <reply name="${command.utility}" args="[${command.args}]" />
-          ${payload}
-          </reply />
-          `
+          `<reply name="${command.utility}" args="[${command.args}]" />${payload}</reply />`
         );
       };
 
       const sendMessage: ExtensionHandlerContext['sendMessage'] = (msg) => {
         const { push } = buffer();
-        push(
-          `
-          <message>
-          ${msg}
-          </message/>
-          `
-        );
+        push(`<message>${msg}</message/>`);
       };
 
       const reportError: ExtensionHandlerContext['sendMessage'] = (msg) => {
         const { push } = buffer();
-        push(
-          `
-          <message type="error">
-          ${msg}
-          </message/>
-          `
-        );
+        push(`<message type="error">${msg}</message/>`);
       };
 
       if (target === 'main') {
