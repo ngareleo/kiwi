@@ -2,7 +2,6 @@
   "name": "kiwi",
   "version": "1.0.0",
   "private": true,
-  "description": "A curation of LLM orchestrators.",
   "repository": "https://github.com/ngareleo/kiwi.git",
   "license": "MIT",
   "author": "ngarimwenda@gmail.com <ngarimwenda@gmail.com>",
@@ -10,17 +9,61 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspace @kiwi/ui build",
-    "dev:server": "yarn workspace @kiwi/jarvis dev",
-    "lab": "yarn workspace @kiwi/jarvis lab",
-    "start:jarvis": "yarn workspace @kiwi/jarvis start",
-    "start:ui": "yarn workspace @kiwi/ui start"
+    "build": "yarn workspaces foreach --from . -R run build",
+    "clean": "rm -rf node_modules .yarn yarn.lock && yarn cache clean",
+    "dev:server": "yarn workspace @kiwi/gpt-orchestrators dev",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lab": "yarn workspace @kiwi/gpt-orchestrators lab",
+    "precommit": "lint-staged",
+    "prepare": "husky install",
+    "start:jarvis": "yarn workspace @kiwi/gpt-orchestrators start",
+    "start:ui": "yarn workspace @kiwi/gpt-lab-ui dev"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "type-enum": [
+        2,
+        "always",
+        [
+          "feat",
+          "fix",
+          "docs",
+          "style",
+          "refactor",
+          "perf",
+          "test",
+          "chore",
+          "revert",
+          "ci",
+          "build"
+        ]
+      ]
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "prettier": {
+    "arrowParens": "always",
+    "bracketSameLine": false,
+    "bracketSpacing": true,
+    "endOfLine": "auto",
+    "jsxSingleQuote": false,
+    "printWidth": 80,
+    "quoteProps": "as-needed",
     "semi": true,
     "singleQuote": true,
     "tabWidth": 2,
     "trailingComma": "es5",
+    "useTabs": false,
     "overrides": [
       {
         "files": "*.json",
@@ -30,13 +73,13 @@
       }
     ]
   },
-  "dependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^19.0.0 || ^18.0.0",
-    "rollup": "^4.35.0"
-  },
   "devDependencies": {
-    "prettier": "^2.8.0",
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.5.3",
     "prettier-plugin-packagejson": "^2.4.0"
-  }
+  },
+  "packageManager": "yarn@4.9.1+sha512.f95ce356460e05be48d66401c1ae64ef84d163dd689964962c6888a9810865e39097a5e9de748876c2e0bf89b232d583c33982773e9903ae7a76257270986538"
 }

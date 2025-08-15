@@ -1,0 +1,6 @@
+{
+  "name": "@kiwi/tsconfig",
+  "version": "1.0.0",
+  "type": "module",
+  "packageManager": "yarn@4.9.1"
+}
