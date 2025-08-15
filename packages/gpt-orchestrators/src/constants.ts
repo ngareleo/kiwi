@@ -1,0 +1,15 @@
+export const protocol = "'Protocol'";
+export const token = "'Protocol Messaging Token'";
+export const message = "'Protocol JSON Message'";
+export const directive = "'Protocol Directive'";
+export const directives = "'Protocol Directives'";
+export const extension = "'Protocol Extension'";
+export const extensions = "'Protocol Extensions'";
+export const system = "'Protocol System'";
+export const pass = '<pass />';
+export const stepPlan = "'Step Plan'";
+export const taskAnalysisReport = "'Task Analysis Report'";
+export const thinkingExtension = "'thinking extension'";
+export const thinkingPhase = "'thinking phase'";
+export const respondingPhase = "'responding phase'";
+export const finalResponse = "'final-response'";

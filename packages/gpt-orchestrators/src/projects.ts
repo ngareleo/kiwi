@@ -1,10 +1,20 @@
-import { Transform, PassThrough, pipeline } from 'stream';
+import {
+  Transform,
+  PassThrough,
+  pipeline,
+  TransformOptions,
+  StreamOptions,
+} from 'stream';
 import 'dotenv/config';
 import OpenAI from 'openai';
 import getRootpath from '@kiwi/common/src/getRootpath.js';
-import { linearLLMExecutor } from './executor_v1.js';
-import { Executor, fsExtension, thinkingExtension } from './executor_v2.js';
-import { Get_AsyncProtocol_System_Prompt } from './prompt_async.js';
+import {
+  Executor,
+  fsExtension,
+  thinkingExtension,
+  linearLLMExecutor,
+} from './executors';
+import { Get_AsyncProtocol_System_Prompt } from './executors/async-execution-prompt';
 
 const apiKey = process.env.OPENAI_KEY;
 const client = new OpenAI({ apiKey });
@@ -46,6 +56,7 @@ export async function repoUnderstanding() {
   return {
     v1: async () => {
       const response = await linearLLMExecutor({
+        formatPrompt: '',
         systemPrompt: getRepoSysPrompt(sysPath),
         userMessage:
           'Write a read me for this repository. Give me as much detail as you can',
@@ -54,10 +65,12 @@ export async function repoUnderstanding() {
       console.log({ response });
     },
     v2: async () => {
-      const response = await new Executor()
+      const executor = new Executor();
+      const response = await executor
         .extension('fs', fsExtension)
         .extension('thinking', thinkingExtension)
         .run({
+          formatPrompt: '',
           systemPrompt: getRepoSysPrompt(sysPath),
           userMessage:
             'Write a read me for this repository. Give me as much detail as you can',
@@ -132,15 +145,14 @@ const llmStream = async ({ systemPrompt, userMessage }) => {
 /**
  * Waits for a "response.output_text.done" event and chunks the response
  * adding it to the internal buffer
- * @param {import("stream").TransformOptions} options
- * @returns {Transform}
  */
-const createReplyChunker = (options) => {
+const createReplyChunker = (options: TransformOptions) => {
   return new Transform({
     ...options,
     objectMode: true,
     transform(chunk, _, cb) {
-      const json = JSON.parse(new Buffer.from(chunk).toString());
+      const buffer = Buffer.from(chunk).toString();
+      const json = JSON.parse(buffer);
       if (json['type'] === 'response.output_text.done') {
         this.push(json['text']);
       }
@@ -152,10 +164,8 @@ const createReplyChunker = (options) => {
 /**
  * Logs each response
  * adding it to the internal buffer
- * @param {import("stream").StreamOptions} options
- * @returns {Transform}
  */
-const createLogger = (options) => {
+const createLogger = (options: TransformOptions) => {
   return new PassThrough({ objectMode: true, ...options }).on(
     'data',
     (chunk) => {
