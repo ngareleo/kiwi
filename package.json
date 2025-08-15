@@ -2,7 +2,6 @@
   "name": "kiwi",
   "version": "1.0.0",
   "private": true,
-  "description": "A curation of LLM orchestrators.",
   "repository": "https://github.com/ngareleo/kiwi.git",
   "license": "MIT",
   "author": "ngarimwenda@gmail.com <ngarimwenda@gmail.com>",
@@ -10,15 +9,15 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspace @kiwi/ui build",
+    "build": "yarn workspaces foreach --from . -R run build",
     "clean": "rm -rf node_modules .yarn yarn.lock && yarn cache clean",
-    "dev:server": "yarn workspace @kiwi/jarvis dev",
+    "dev:server": "yarn workspace @kiwi/gpt-orchestrators dev",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
-    "lab": "yarn workspace @kiwi/jarvis lab",
+    "lab": "yarn workspace @kiwi/gpt-orchestrators lab",
     "precommit": "lint-staged",
     "prepare": "husky install",
-    "start:jarvis": "yarn workspace @kiwi/jarvis start",
-    "start:ui": "yarn workspace @kiwi/ui start"
+    "start:jarvis": "yarn workspace @kiwi/gpt-orchestrators start",
+    "start:ui": "yarn workspace @kiwi/gpt-lab-ui dev"
   },
   "commitlint": {
     "extends": [
