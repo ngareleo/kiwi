@@ -29,9 +29,9 @@ export class Executor {
 
   constructor() {}
 
-  extension(name: SupportedExtensions, extension: ExtensionHandler) {
+  extension(name: SupportedExtensions, extension: ExtensionHandler): Executor {
     if (Object.hasOwn(this.extensions, name)) {
-      return;
+      return this;
     }
 
     this.extensions[name] = extension;
